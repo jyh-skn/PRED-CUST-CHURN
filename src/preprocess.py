@@ -6,8 +6,10 @@ from sklearn.preprocessing import StandardScaler, OneHotEncoder, RobustScaler
 from sklearn.impute import SimpleImputer
 from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
+import streamlit as st
 
-def load_data(type:str = 'train'):
+@st.cache_resource
+def load_data():
     """
     데이터를 공통으로 로드하는 함수
     :return:
@@ -21,10 +23,8 @@ def load_data(type:str = 'train'):
     data_path = project_root / "data" / data_file_name
 
     df = pd.read_csv(data_path)
-    # 전처리
-    common_preprocess_churn_data(df)
 
-    return df
+    return common_preprocess_churn_data(df)
 
 def common_preprocess_churn_data(df):
     """
