@@ -195,6 +195,7 @@ THRESHOLD_PATH = BASE_DIR / "model" / "threshold_new.pkl"
 def load_data():
     return pd.read_csv(DATA_PATH)
 
+
 @st.cache_resource
 def load_model():
     model = joblib.load(MODEL_PATH)

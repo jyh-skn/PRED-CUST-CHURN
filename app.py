@@ -4,7 +4,7 @@ import streamlit as st
 entry_p = st.Page("pages/entry.py", title="홈", icon="🏠", default=True)
 churn_predictor_p = st.Page("pages/churn_predictor.py", title="고객이탈예측", icon="🔮")
 risk_watchlist_p = st.Page("pages/risk_watchlist.py", title="위험리스트", icon="🚨")
-simulation_p = st.Page("pages/simulation.py", title="시뮬레이션", icon="📈")
+simulation_p = st.Page("pages/simulation_kys.py", title="시뮬레이션", icon="📈")
 model_info_p = st.Page("pages/model_info.py", title="모델 정보", icon="⚪")
 model_info_2_p = st.Page("pages/model_monitor.py", title="모델 정보 2", icon="🧪")
 
