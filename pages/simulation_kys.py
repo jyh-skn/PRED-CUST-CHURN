@@ -61,16 +61,16 @@ set_korean_font()
 st.markdown("""
 <style>
 .block-container {
-    padding-top: 1.1rem;
+    padding-top: 1.05rem;
     padding-bottom: 2rem;
     padding-left: 2rem;
     padding-right: 2rem;
 }
 .big-title {
-    font-size: 2.3rem;
+    font-size: 2.35rem;
     font-weight: 800;
     color: #0f172a;
-    margin-bottom: 0.2rem;
+    margin-bottom: 0.15rem;
 }
 .sub-text {
     font-size: 1.02rem;
@@ -78,16 +78,16 @@ st.markdown("""
     margin-bottom: 1.2rem;
 }
 .section-title {
-    font-size: 1.45rem;
+    font-size: 1.5rem;
     font-weight: 800;
     color: #0f172a;
-    margin-top: 0.4rem;
+    margin-top: 0.35rem;
     margin-bottom: 0.9rem;
 }
 .info-card {
     background: #f8fafc;
     border: 1px solid #e5e7eb;
-    border-radius: 16px;
+    border-radius: 18px;
     padding: 1rem 1.2rem;
     margin-top: 0.5rem;
     margin-bottom: 0.8rem;
@@ -96,7 +96,7 @@ div[data-testid="stMetric"] {
     background: #ffffff;
     border: 1px solid #e5e7eb;
     padding: 14px 16px;
-    border-radius: 16px;
+    border-radius: 18px;
     box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
 }
 div[data-testid="stMetricLabel"] {
@@ -402,6 +402,99 @@ def run_single_policy_simulations(
     return pd.DataFrame(rows).sort_values("평균 이탈확률 감소폭", ascending=True)
 
 # ==============================
+# 예쁜 막대그래프 함수
+# ==============================
+def draw_pretty_bar_chart(title, ylabel, before_value, after_value, before_color, after_color):
+    fig, ax = plt.subplots(figsize=(6.2, 4.45), facecolor="white")
+    ax.set_facecolor("white")
+
+    labels = ["원본", "시뮬레이션"]
+    values = [before_value, after_value]
+    colors = [before_color, after_color]
+
+    x = np.array([0, 0.78])
+
+    bars = ax.bar(
+        x,
+        values,
+        color=colors,
+        width=0.30,
+        edgecolor="none",
+        zorder=3
+    )
+
+    # 축 스타일
+    ax.spines["top"].set_visible(False)
+    ax.spines["right"].set_visible(False)
+    ax.spines["left"].set_color("#CBD5E1")
+    ax.spines["bottom"].set_color("#CBD5E1")
+    ax.spines["left"].set_linewidth(1.0)
+    ax.spines["bottom"].set_linewidth(1.0)
+
+    # x축 라벨 크게
+    ax.set_xticks(x)
+    ax.set_xticklabels(labels, fontsize=15, fontweight="bold", color="#334155")
+
+    # y축 라벨 작게
+    ax.tick_params(axis="y", labelsize=9, colors="#64748B")
+    ax.set_ylabel(ylabel, fontsize=10, color="#475569", labelpad=8)
+
+    # 제목
+    ax.set_title(title, fontsize=18, fontweight="bold", color="#0F172A", pad=12)
+
+    # 그리드
+    ax.yaxis.grid(True, linestyle="--", linewidth=0.8, alpha=0.16)
+    ax.set_axisbelow(True)
+
+    # 여백
+    y_max = max(values)
+    ax.set_ylim(0, y_max * 1.17 if y_max > 0 else 1)
+    ax.set_xlim(-0.22, 1.0)
+
+    # 값 라벨
+    value_colors = ["#111827", "#1D4ED8"]
+    for idx, (bar, value) in enumerate(zip(bars, values)):
+        ax.text(
+            bar.get_x() + bar.get_width() / 2,
+            value + y_max * 0.012,
+            f"{value:.2f}%",
+            ha="center",
+            va="bottom",
+            fontsize=16,
+            fontweight="bold",
+            color=value_colors[idx]
+        )
+
+    # 감소 배지
+    diff = before_value - after_value
+    if diff >= 0:
+        diff_text = f"▼ {diff:.2f}%p 감소"
+        badge_fc = "#ECFDF5"
+        badge_tc = "#047857"
+    else:
+        diff_text = f"▲ {abs(diff):.2f}%p 증가"
+        badge_fc = "#FEF2F2"
+        badge_tc = "#B91C1C"
+
+    ax.text(
+        0.5,
+        0.95,
+        diff_text,
+        transform=ax.transAxes,
+        ha="center",
+        va="top",
+        fontsize=10.5,
+        color=badge_tc,
+        bbox=dict(
+            boxstyle="round,pad=0.34",
+            facecolor=badge_fc,
+            edgecolor="none"
+        )
+    )
+
+    return fig
+
+# ==============================
 # 헤더
 # ==============================
 st.markdown('<div class="big-title">📈 What-If 비즈니스 시뮬레이션</div>', unsafe_allow_html=True)
@@ -514,74 +607,78 @@ with col5:
 st.divider()
 
 # ==============================
-# 그래프 영역 - 좌우 배치
+# 그래프 영역 - 예쁜 버전
 # ==============================
 st.markdown('<div class="section-title">💡 기대 효과 분석</div>', unsafe_allow_html=True)
 
 col_left, col_right = st.columns(2)
 
 with col_left:
-    base_avg_prob = float(base_result["avg_prob"])
-    sim_avg_prob = float(sim_result["avg_prob"])
-
-    fig1, ax1 = plt.subplots(figsize=(6, 4))
-    labels1 = ["원본", "시뮬레이션"]
-    values1 = [base_avg_prob, sim_avg_prob]
-    colors1 = ["#f4a6a6", "#7fb3ff"]
-
-    bars1 = ax1.bar(labels1, values1, color=colors1, width=0.55)
-
-    ax1.set_title("평균 이탈확률 비교", fontsize=14, fontweight="bold")
-    ax1.set_ylabel("평균 이탈확률 (%)")
-    ax1.set_ylim(0, max(values1) * 1.18 if max(values1) > 0 else 1)
-
-    for bar, value in zip(bars1, values1):
-        ax1.text(
-            bar.get_x() + bar.get_width() / 2,
-            value + (max(values1) * 0.02 if max(values1) > 0 else 0.1),
-            f"{value:.2f}%",
-            ha="center",
-            va="bottom",
-            fontsize=12,
-            fontweight="bold"
-        )
-
-    ax1.spines["top"].set_visible(False)
-    ax1.spines["right"].set_visible(False)
+    fig1 = draw_pretty_bar_chart(
+        title="평균 이탈확률 비교",
+        ylabel="이탈확률 (%)",
+        before_value=float(base_result["avg_prob"]),
+        after_value=float(sim_result["avg_prob"]),
+        before_color="#F2A4A4",
+        after_color="#78A6E3",
+    )
     st.pyplot(fig1, use_container_width=True)
     plt.close(fig1)
 
 with col_right:
-    base_churn_rate = float(base_result["churn_rate"])
-    sim_churn_rate = float(sim_result["churn_rate"])
-
-    fig2, ax2 = plt.subplots(figsize=(6, 4))
-    labels2 = ["원본", "시뮬레이션"]
-    values2 = [base_churn_rate, sim_churn_rate]
-    colors2 = ["#e8a2a2", "#6fa8dc"]
-
-    bars2 = ax2.bar(labels2, values2, color=colors2, width=0.55)
-
-    ax2.set_title("예상 이탈률 비교", fontsize=14, fontweight="bold")
-    ax2.set_ylabel("예상 이탈률 (%)")
-    ax2.set_ylim(0, max(values2) * 1.18 if max(values2) > 0 else 1)
-
-    for bar, value in zip(bars2, values2):
-        ax2.text(
-            bar.get_x() + bar.get_width() / 2,
-            value + (max(values2) * 0.02 if max(values2) > 0 else 0.1),
-            f"{value:.2f}%",
-            ha="center",
-            va="bottom",
-            fontsize=12,
-            fontweight="bold"
-        )
-
-    ax2.spines["top"].set_visible(False)
-    ax2.spines["right"].set_visible(False)
+    fig2 = draw_pretty_bar_chart(
+        title="예상 이탈률 비교",
+        ylabel="예상 이탈률 (%)",
+        before_value=float(base_result["churn_rate"]),
+        after_value=float(sim_result["churn_rate"]),
+        before_color="#E59696",
+        after_color="#6D9CD0",
+    )
     st.pyplot(fig2, use_container_width=True)
     plt.close(fig2)
 
+# # ==============================
+# # 정책별 효과 비교
+# # ==============================
+# st.markdown('<div class="section-title">📌 정책별 효과 비교</div>', unsafe_allow_html=True)
+#
+# fig3, ax3 = plt.subplots(figsize=(9, 5), facecolor="white")
+# ax3.set_facecolor("white")
+#
+# bars3 = ax3.barh(
+#     policy_effect_df["정책"],
+#     policy_effect_df["평균 이탈확률 감소폭"],
+#     color="#8BB4EA",
+#     edgecolor="none",
+#     height=0.48
+# )
+#
+# ax3.set_title("정책별 평균 이탈확률 감소폭", fontsize=15, fontweight="bold", color="#0F172A", pad=12)
+# ax3.set_xlabel("감소폭 (%p)", fontsize=11, color="#475569")
+# ax3.spines["top"].set_visible(False)
+# ax3.spines["right"].set_visible(False)
+# ax3.spines["left"].set_color("#CBD5E1")
+# ax3.spines["bottom"].set_color("#CBD5E1")
+# ax3.tick_params(axis="y", labelsize=11, colors="#334155")
+# ax3.tick_params(axis="x", labelsize=10, colors="#64748B")
+# ax3.xaxis.grid(True, linestyle="--", alpha=0.16)
+# ax3.set_axisbelow(True)
+#
+# for bar, value in zip(bars3, policy_effect_df["평균 이탈확률 감소폭"]):
+#     ax3.text(
+#         value + 0.04,
+#         bar.get_y() + bar.get_height() / 2,
+#         f"{value:.2f}",
+#         va="center",
+#         fontsize=11,
+#         color="#1E3A8A",
+#         fontweight="bold"
+#     )
+#
+# st.pyplot(fig3, use_container_width=True)
+# plt.close(fig3)
+#
+# st.dataframe(policy_effect_df, use_container_width=True)
 
 # ==============================
 # 자동 요약문
