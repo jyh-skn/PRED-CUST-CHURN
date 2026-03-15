@@ -98,7 +98,8 @@ Team RETURNS는 보험사의 유지율(Retention Rate)을 극대화하기 위해
 | 고객 프로필 | `region_name`, `age_band`, `tenure` | 지역별 / 연령대별 / 가입 기간별 고객 성향 파악 |
 | 보험 및 청구 | `current_premium`, `num_claims_12m` | 현재 납입료 수준 및 최근 1년 내 서비스 이용 빈도 측정 |
 | 리스크 지표 | `complaint_flag`, `late_payment_count` | 민원 발생 및 보험료 연체 등 직접적인 이탈 징후 포착 |
-🛠️ 데이터 전처리 및 분석 (EDA & Processing)
+
+🛠️ 데이터 전처리 및 분석 (EDA & Processing)\
 모델 성능 최적화를 위해 다음과 같은 분석과 가공 과정을 거쳤습니다.
 
 1. 중복성 제거 (Feature Selection):
